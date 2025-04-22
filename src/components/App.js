@@ -1,52 +1,69 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import PlantList from "./PlantList";
-import NewPlantForm from "./NewPlantForm";
+import PlantForm from "./NewPlantForm";
 import Search from "./Search";
 
 function App() {
   const [plants, setPlants] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch all plants on mount
   useEffect(() => {
-    fetch("http://localhost:6001/plants")
+    fetch("https://plantsy-api-fq97.onrender.com/plants")
       .then((res) => res.json())
       .then(setPlants)
-      .catch((err) => console.error("Error fetching plants:", err));
+      .catch((err) => console.error("Failed to load plants:", err));
   }, []);
 
-  // Add a new plant to state
-  const addNewPlant = (newPlant) => {
-    setPlants([...plants, newPlant]);
-  };
+  function handleAddPlant(newPlant) {
+    setPlants((prevPlants) => [...prevPlants, newPlant]);
+  }
 
-  // Update plant price
-  const updatePlantPrice = (updatedPlant) => {
-    const updatedList = plants.map((plant) =>
-      plant.id === updatedPlant.id ? updatedPlant : plant
+  function handleToggleSoldOut(id) {
+    setPlants((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, soldOut: !p.soldOut } : p
+      )
     );
-    setPlants(updatedList);
-  };
+  }
 
-  // Delete plant from state
-  const deletePlant = (id) => {
-    setPlants(plants.filter((plant) => plant.id !== id));
-  };
+  function handleUpdatePrice(id, newPrice) {
+    fetch(`https://plantsy-api-fq97.onrender.com/plants/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ price: newPrice }),
+    })
+      .then((res) => res.json())
+      .then((updatedPlant) => {
+        setPlants((prev) =>
+          prev.map((plant) =>
+            plant.id === updatedPlant.id ? updatedPlant : plant
+          )
+        );
+      });
+  }
 
-  // Filter based on search term
-  const filteredPlants = plants.filter((plant) =>
+  function handleDelete(id) {
+    fetch(`https://plantsy-api-fq97.onrender.com/plants/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      setPlants((prev) => prev.filter((plant) => plant.id !== id));
+    });
+  }
+
+  const displayedPlants = plants.filter((plant) =>
     plant.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="app">
       <h1>🌿 Plantsy Admin</h1>
-      <NewPlantForm onAddPlant={addNewPlant} />
-      <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <PlantForm onAddPlant={handleAddPlant} />
+      <Search value={searchTerm} onChange={setSearchTerm} />
       <PlantList
-        plants={filteredPlants}
-        onPriceUpdate={updatePlantPrice}
-        onDeletePlant={deletePlant}
+        plants={displayedPlants}
+        onToggleSoldOut={handleToggleSoldOut}
+        onUpdatePrice={handleUpdatePrice}
+        onDelete={handleDelete}
       />
     </div>
   );

@@ -7,59 +7,58 @@ function NewPlantForm({ onAddPlant }) {
     price: "",
   });
 
-  const handleChange = (e) => {
+  function handleChange(e) {
     const { name, value } = e.target;
-    setFormData((data) => ({
-      ...data,
-      [name]: value,
-    }));
-  };
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }
 
-  const handleSubmit = (e) => {
+  function handleSubmit(e) {
     e.preventDefault();
 
     const newPlant = {
-      name: formData.name,
-      image: formData.image,
+      ...formData,
       price: parseFloat(formData.price),
+      soldOut: false,
     };
 
     fetch("http://localhost:6001/plants", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newPlant),
     })
-      .then((r) => r.json())
-      .then((newData) => {
-        onAddPlant(newData);
+      .then((res) => res.json())
+      .then((data) => {
+        onAddPlant(data);
         setFormData({ name: "", image: "", price: "" });
       });
-  };
+  }
 
   return (
-    <form className="new-plant-form" onSubmit={handleSubmit}>
-      <h3>Add a New Plant</h3>
+    <form onSubmit={handleSubmit}>
+      <h2>Add a New Plant</h2>
       <input
+        type="text"
         name="name"
         placeholder="Plant name"
         value={formData.name}
         onChange={handleChange}
+        required
       />
       <input
+        type="text"
         name="image"
         placeholder="Image URL"
         value={formData.image}
         onChange={handleChange}
+        required
       />
       <input
-        name="price"
         type="number"
-        step="0.01"
+        name="price"
         placeholder="Price"
         value={formData.price}
         onChange={handleChange}
+        required
       />
       <button type="submit">Add Plant</button>
     </form>

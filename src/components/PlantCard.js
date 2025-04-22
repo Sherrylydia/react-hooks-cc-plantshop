@@ -1,74 +1,45 @@
 import React, { useState } from "react";
 
-function PlantCard({ plant, onPriceUpdate, onDelete }) {
-  const [isSoldOut, setIsSoldOut] = useState(false);
+function PlantCard({ plant, onToggleSoldOut, onUpdatePrice, onDelete }) {
+  const { id, name, image, price, soldOut } = plant;
   const [editing, setEditing] = useState(false);
-  const [price, setPrice] = useState(plant.price);
+  const [newPrice, setNewPrice] = useState(price);
 
-  const toggleSoldOut = () => {
-    setIsSoldOut(!isSoldOut);
-  };
-
-  const handlePriceSave = () => {
-    fetch(`http://localhost:6001/plants/${plant.id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ price: parseFloat(price) }),
-    })
-      .then((r) => r.json())
-      .then((updatedPlant) => {
-        onPriceUpdate(updatedPlant);
-        setEditing(false);
-      });
-  };
-
-  const handleDelete = () => {
-    fetch(`http://localhost:6001/plants/${plant.id}`, {
-      method: "DELETE",
-    }).then(() => onDelete(plant.id));
-  };
+  function handlePriceSave() {
+    if (newPrice !== price) {
+      onUpdatePrice(id, parseFloat(newPrice));
+    }
+    setEditing(false);
+  }
 
   return (
-    <li className="card">
-      <img src={plant.image} alt={plant.name} />
-      <h4>{plant.name}</h4>
-      <div>
+    <li className="plant-card">
+      <img src={image} alt={name} />
+      <div className="details">
+        <h3>{name}</h3>
+
         {editing ? (
           <>
             <input
               type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              style={{ width: "80px", marginRight: "5px" }}
+              value={newPrice}
+              onChange={(e) => setNewPrice(e.target.value)}
             />
-            <button className="primary" onClick={handlePriceSave}>
-              Save 💾
-            </button>
+            <button onClick={handlePriceSave}>Save</button>
+            <button onClick={() => setEditing(false)}>Cancel</button>
           </>
         ) : (
-          <p>Price: ${price}</p>
+          <>
+            <p>${price}</p>
+            <button onClick={() => setEditing(true)}>Edit Price</button>
+          </>
         )}
+
+        <button onClick={() => onToggleSoldOut(id)}>
+          {soldOut ? "Back in Stock" : "Sold Out"}
+        </button>
+        <button onClick={() => onDelete(id)}>Delete</button>
       </div>
-      <button
-        className={isSoldOut ? "secondary" : "primary"}
-        onClick={toggleSoldOut}
-      >
-        {isSoldOut ? "Sold Out" : "In Stock"}
-      </button>
-      <button
-        style={{ backgroundColor: "orange", marginTop: "5px" }}
-        onClick={() => setEditing(!editing)}
-      >
-        {editing ? "Cancel" : "Edit Price ✏️"}
-      </button>
-      <button
-        style={{ backgroundColor: "crimson", color: "white", marginTop: "5px" }}
-        onClick={handleDelete}
-      >
-        Delete 🗑️
-      </button>
     </li>
   );
 }
