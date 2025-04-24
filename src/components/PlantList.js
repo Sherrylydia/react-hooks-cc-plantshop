@@ -1,7 +1,7 @@
 import React from "react";
 import PlantCard from "./PlantCard";
 
-function PlantList({ plants, onToggleSoldOut, onUpdatePrice, onDelete }) {
+function PlantList({ plants, onToggleSoldOut, onDelete }) {
   return (
     <ul className="plant-list">
       {plants.map((plant) => (
@@ -9,7 +9,6 @@ function PlantList({ plants, onToggleSoldOut, onUpdatePrice, onDelete }) {
           key={plant.id}
           plant={plant}
           onToggleSoldOut={onToggleSoldOut}
-          onUpdatePrice={onUpdatePrice}
           onDelete={onDelete}
         />
       ))}

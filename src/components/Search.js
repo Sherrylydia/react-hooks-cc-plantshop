@@ -1,13 +1,13 @@
 import React from "react";
 
-function Search({ value, onChange }) {
+function Search({ search, onSearchChange }) {
   return (
-    <div className="search">
+    <div className="search-bar">
       <input
         type="text"
         placeholder="Search plants..."
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={search}
+        onChange={(e) => onSearchChange(e.target.value)}
       />
     </div>
   );
